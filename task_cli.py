@@ -4,6 +4,12 @@ import sys
 from datetime import datetime
 
 TASKS_FILE = "tasks.json"
+def parse_task_id(value):
+    try:
+        return int(value)
+    except ValueError:
+        print("Error: Task ID must be a number.")
+        return None
 
 def load_tasks():
     if not os.path.exists(TASKS_FILE):
@@ -91,11 +97,23 @@ def mark_task_status(task_id, new_status):
 
     save_tasks(tasks)
     print(f"Task {task_id} marked as {new_status}.")
+def print_usage():
+    print("""
+                Task Tracker CLI - Usage:
 
+    add "description"             Add a new task   
+    update <id> "description"     Update a task
+    delete <id>                   Delete a task
+    list                          List all tasks
+    list todo|done|in-progress    List tasks by status
+    mark-in-progress <id>         Mark task as in-progress
+    markdone <id>                 Mark task as done
+""")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: task-cli <command> [<args>]")
+        print_usage()
         sys.exit(1)
     
     command = sys.argv[1]
@@ -119,26 +137,34 @@ if __name__ == "__main__":
         if len(sys.argv) < 4:
             print("Usage: task-cli update <id> \"new description\"")
         else:
-            task_id = int(sys.argv[2])
+            task_id = parse_task_id(sys.argv[2])
+            if task_id is None:
+                sys.exit(1)
             new_description = sys.argv[3]
             update_task(task_id, new_description)
     elif command == "delete":
         if len(sys.argv) < 3:
             print("Usage: task-cli delete <id>")
         else:
-            task_id = int(sys.argv[2])
+            task_id = parse_task_id(sys.argv[2])
+            if task_id is None:
+                sys.exit(1)
             delete_task(task_id)
     elif command == "mark-in-progress":
         if len(sys.argv) < 3:
             print("Usage: task-cli mark-in-progress <id>")
         else:
-            task_id = int(sys.argv[2])
+            task_id = parse_task_id(sys.argv[2])
+            if task_id is None:
+                sys.exit(1)
             mark_task_status(task_id, "in-progress")
     elif command == "mark-done":
         if len(sys.argv) < 3:
             print("Usage: task-cli mark-done <id>")
         else:
-            task_id = int(sys.argv[2])
+            task_id = parse_task_id(sys.argv[2])
+            if task_id is None:
+                sys.exit(1)
             mark_task_status(task_id, "done")
     else:
         print(f"Unknown command: {command}")
