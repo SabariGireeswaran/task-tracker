@@ -78,6 +78,21 @@ def delete_task(task_id):
     save_tasks(tasks)
     print(f"Task {task_id} deleted successfully.")
 
+def mark_task_status(task_id, new_status):
+    tasks = load_tasks()
+    task = find_task_by_id(tasks, task_id)
+
+    if task is None:
+        print(f"Error: Task with ID {task_id} not found.")
+        return
+    
+    task["status"] = new_status
+    task["updateAt"] = datetime.now().strftime("Y-%m-%d %H:%M:%S")
+
+    save_tasks(tasks)
+    print(f"Task {task_id} marked as {new_status}.")
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: task-cli <command> [<args>]")
@@ -113,6 +128,18 @@ if __name__ == "__main__":
         else:
             task_id = int(sys.argv[2])
             delete_task(task_id)
+    elif command == "mark-in-progress":
+        if len(sys.argv) < 3:
+            print("Usage: task-cli mark-in-progress <id>")
+        else:
+            task_id = int(sys.argv[2])
+            mark_task_status(task_id, "in-progress")
+    elif command == "mark-done":
+        if len(sys.argv) < 3:
+            print("Usage: task-cli mark-done <id>")
+        else:
+            task_id = int(sys.argv[2])
+            mark_task_status(task_id, "done")
     else:
         print(f"Unknown command: {command}")
 
