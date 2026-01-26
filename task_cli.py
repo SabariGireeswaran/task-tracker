@@ -48,6 +48,36 @@ def list_tasks(filter_status = None):
         if filter_status is None or task["status"] == filter_status:
             print(f'[{task["id"]}] {task["description"]} ({task["status"]})')
 
+def find_task_by_id(tasks, task_id):
+    for task in tasks:
+        if task["id"] == task_id:
+            return task
+    return None
+
+def update_task(task_id, new_description):
+    tasks = load_tasks()
+    task = find_task_by_id(tasks, task_id)
+
+    if task is None:
+        print(f"Error: Task with ID {task_id} not found.")
+        return
+    task["description"] = new_description
+    task["updatedAt"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    save_tasks(tasks)
+    print(f"Task {task_id} updated successfully.")
+def delete_task(task_id):
+    tasks = load_tasks()
+    task = find_task_by_id(tasks, task_id)
+
+    if task is None:
+        print(f"Error: Task with ID {task_id} not found.")
+        return
+    
+    tasks.remove(task)
+    save_tasks(tasks)
+    print(f"Task {task_id} deleted successfully.")
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: task-cli <command> [<args>]")
@@ -70,7 +100,19 @@ if __name__ == "__main__":
                 print("Invalid status. Use: todo, done, in-progress")
             else:
                 list_tasks(status)
-
+    elif command == "update":
+        if len(sys.argv) < 4:
+            print("Usage: task-cli update <id> \"new description\"")
+        else:
+            task_id = int(sys.argv[2])
+            new_description = sys.argv[3]
+            update_task(task_id, new_description)
+    elif command == "delete":
+        if len(sys.argv) < 3:
+            print("Usage: task-cli delete <id>")
+        else:
+            task_id = int(sys.argv[2])
+            delete_task(task_id)
     else:
         print(f"Unknown command: {command}")
 
