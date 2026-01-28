@@ -1,7 +1,17 @@
+# task_cli.py
+# A command-line interface for managing tasks in a task tracker application.
+# It allows users to add, list, update, delete, and mark tasks with different statuses.
+# The tasks are stored in a JSON file for persistence.
+# Required imports
 import json
 import os
 import sys
 from datetime import datetime
+from core.manager import TaskManager
+from storage.json_store import JsonTaskStore
+
+store = JsonTaskStore("tasks.json")
+manager = TaskManager(store)
 
 TASKS_FILE = "tasks.json"
 def parse_task_id(value):
@@ -118,54 +128,56 @@ if __name__ == "__main__":
     
     command = sys.argv[1]
 
-    if command == "add":
+    if command == "add":  # Add a new task
         if len(sys.argv) < 3:
-            print("Error: Task description is required.")
+            print("Usage: task-cli add \"description\"")
+            sys.exit(1)
+        
+        task = manager.add_task(sys.argv[2])
+        print(f"Task added successfully (ID: {task.id})")
+
+    elif command == "list": # List tasks
+        status = sys.argv[2] if len(sys.argv) > 2 else None
+        tasks = manager.list_tasks(status)
+
+        if not tasks:
+            print("No tasks found.")
         else:
-            description = sys.argv[2]
-            add_task(description)
-    elif command == "list":
-        if len(sys.argv) == 2:
-            list_tasks()
-        else:
-            status = sys.argv[2]
-            if status not in ["todo", "done", "in-progress"]:
-                print("Invalid status. Use: todo, done, in-progress")
-            else:
-                list_tasks(status)
-    elif command == "update":
+            for task in tasks:
+                print(task.to_dict())
+
+    elif command == "update":  # Update a task
         if len(sys.argv) < 4:
             print("Usage: task-cli update <id> \"new description\"")
-        else:
-            task_id = parse_task_id(sys.argv[2])
-            if task_id is None:
-                sys.exit(1)
-            new_description = sys.argv[3]
-            update_task(task_id, new_description)
-    elif command == "delete":
+        try:
+            manager.update_task(int(sys.argv[2]), sys.argv[3])
+            print(f"Task updated successfully.")
+        except ValueError as e:
+            print(e)
+
+    elif command == "delete":   # Delete a task
         if len(sys.argv) < 3:
             print("Usage: task-cli delete <id>")
-        else:
-            task_id = parse_task_id(sys.argv[2])
-            if task_id is None:
-                sys.exit(1)
-            delete_task(task_id)
-    elif command == "mark-in-progress":
-        if len(sys.argv) < 3:
-            print("Usage: task-cli mark-in-progress <id>")
-        else:
-            task_id = parse_task_id(sys.argv[2])
-            if task_id is None:
-                sys.exit(1)
-            mark_task_status(task_id, "in-progress")
-    elif command == "mark-done":
-        if len(sys.argv) < 3:
-            print("Usage: task-cli mark-done <id>")
-        else:
-            task_id = parse_task_id(sys.argv[2])
-            if task_id is None:
-                sys.exit(1)
-            mark_task_status(task_id, "done")
+            sys.exit(1)
+        try:
+            manager.delete_task(int(sys.argv[2]))
+            print("Task deleted successfully.")
+        except ValueError as e:
+            print(e)
+
+    elif command == "mark-in-progress":  # Mark task as in-progress
+        try:
+            manager.mark_task(int(sys.argv[2]), "in-progress")
+            print("Task marked as in-progress.")
+        except ValueError as e:
+            print(e)
+
+    elif command == "mark-done":  # Mark task as done
+        try:
+            manager.mark_task(int(sys.argv[2]), "done")
+            print("Task marked as done.")
+        except ValueError as e:
+            print(e)
     else:
         print(f"Unknown command: {command}")
 

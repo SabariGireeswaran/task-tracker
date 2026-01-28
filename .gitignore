@@ -1,1 +1,10 @@
 tasks.json
+# Python virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local data files
+tasks.json
