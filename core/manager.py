@@ -67,3 +67,12 @@ class TaskManager:
             return [t for t in tasks if t.status == status]
         
         return tasks
+    
+    def get_task_by_id(self, task_id: int):
+        tasks = self._load_tasks()
+
+        for task in tasks:
+            if task.id == task_id:
+                return task
+            
+        return None
