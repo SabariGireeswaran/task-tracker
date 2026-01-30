@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 
 from core.manager import TaskManager
-from storage.json_store import JsonTaskStore
+from storage.db_store import DbTaskStore
 
 from storage.db.database import engine, Base
 from storage.db import models
@@ -13,7 +13,7 @@ app = FastAPI(title = "Task Tracker API")
 Base.metadata.create_all(bind=engine)
 
 # ---- Dependency setup (same as CLI) ---- 
-store = JsonTaskStore("tasks.json")
+store = DbTaskStore()
 manager = TaskManager(store)
 
 # ---- Request schema FIRST ----
