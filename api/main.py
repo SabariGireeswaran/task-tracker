@@ -4,7 +4,13 @@ from pydantic import BaseModel
 from core.manager import TaskManager
 from storage.json_store import JsonTaskStore
 
+from storage.db.database import engine, Base
+from storage.db import models
+
 app = FastAPI(title = "Task Tracker API")
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
 # ---- Dependency setup (same as CLI) ---- 
 store = JsonTaskStore("tasks.json")
