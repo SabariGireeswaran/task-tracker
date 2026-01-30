@@ -7,7 +7,13 @@ from storage.db_store import DbTaskStore
 from storage.db.database import engine, Base
 from storage.db import models
 
-app = FastAPI(title = "Task Tracker API")
+from fastapi.responses import RedirectResponse
+
+app = FastAPI(
+    title = "Task Tracker API",
+    description="Simple task manager built with FastAPI + Clean Architecture",
+    version="1.0.0"    
+)
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -32,9 +38,9 @@ class MessageResponse(BaseModel):
     message: str
 
 # ---- Routes AFTER ----
-@app.get("/", response_model = MessageResponse)
+@app.get("/", include_in_schema=False)
 def root():
-    return {"message": "Task Tracker API is running"}
+    return RedirectResponse(url = "/docs")
 
 @app.post("/tasks", response_model = TaskResponse,
           status_code=status.HTTP_201_CREATED)
