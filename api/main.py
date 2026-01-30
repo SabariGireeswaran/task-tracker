@@ -57,13 +57,7 @@ def list_tasks(task_status: str | None = None):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid status. Allowed values: {', '.join(VALID_STATUSES)}"
         )
-    try:
-        tasks = manager.list_tasks(status)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    tasks = manager.list_tasks(task_status)
 
     if not tasks:
         raise HTTPException(
