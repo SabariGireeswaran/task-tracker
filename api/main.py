@@ -27,6 +27,9 @@ class TaskCreate(BaseModel):
 
     description: str
 
+class TaskUpdate(BaseModel):
+    description: str 
+
 class TaskResponse(BaseModel):
     id: int
     description: str
@@ -85,3 +88,22 @@ def get_task(task_id: int):
     
     return task.to_dict()
 
+@app.put("/tasks/{task_id}", response_model=TaskResponse)
+def update_task(task_id: int, task: TaskUpdate):
+
+    if not task.description.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Task description cannot be empty"
+        )
+    
+    try:
+        manager.update_task(task_id, task.description)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task with id {task_id} not found"
+        )
+    
+    updated_task = manager.get_task_by_id(task_id)
+    return updated_task.to_dict()
