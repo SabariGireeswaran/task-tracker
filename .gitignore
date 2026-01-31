@@ -1,10 +1,22 @@
-tasks.json
-# Python virtual environment
+# -----------------
+# Python
+# -----------------
 venv/
-
-# Python cache
 __pycache__/
 *.pyc
-
-# Local data files
+.env
+tasks.db
 tasks.json
+
+# -----------------
+# React / Node
+# -----------------
+node_modules/
+dist/
+build/
+npm-debug.log
+
+# -----------------
+# OS
+# -----------------
+.DS_Store
