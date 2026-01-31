@@ -9,6 +9,11 @@ from storage.db import models
 
 from fastapi.responses import RedirectResponse
 
+from storage.db.database import SessionLocal
+from storage.db.models import User
+from core.security import hash_password
+from core.security import verify_password
+
 app = FastAPI(
     title = "Task Tracker API",
     description="Simple task manager built with FastAPI + Clean Architecture",
@@ -39,6 +44,10 @@ class TaskResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
 
 # ---- Routes AFTER ----
 @app.get("/", include_in_schema=False)
@@ -119,3 +128,35 @@ def delete_task(task_id: int):
             detail=f"Task with id {task_id} not found"
         )
     return {"message": f"Task {task_id} deleted successfully."}
+
+@app.post("/register")
+def register(user: UserCreate):
+    db = SessionLocal()
+
+    existing = db.query(User).filter(User.username == user.username).first()
+    if existing:
+        db.close()
+        raise HTTPException(400, "Username already exists")
+    
+    new_user = User(
+        username = user.username,
+        password = hash_password(user.password)
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.close()
+
+    return {"message": "User registered successfully"}
+
+@app.post("/login")
+def login(user: UserCreate):
+    db = SessionLocal()
+
+    db_user = db.query(User).filter(User.username == user.username).first()
+    db.close()
+
+    if not db_user or not verify_password(user.password, db_user.password):
+        raise HTTPException(401, "Invalid credentials")
+    
+    return {"message": "Login successful(token next step)"}
