@@ -107,3 +107,15 @@ def update_task(task_id: int, task: TaskUpdate):
     
     updated_task = manager.get_task_by_id(task_id)
     return updated_task.to_dict()
+
+@app.delete("/tasks/{task_id}", response_model=MessageResponse)
+def delete_task(task_id: int):
+
+    try:
+        manager.delete_task(task_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task with id {task_id} not found"
+        )
+    return {"message": f"Task {task_id} deleted successfully."}
