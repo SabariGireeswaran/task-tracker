@@ -1,66 +1,61 @@
-import { useEffect, useState } from "react";
+import { useEffect,useState } from "react";
+import TaskForm from "./components/TaskForm";
+import TaskList from "./components/TaskList";
+import FilterBar from "./components/FilterBar";
+
+const API = "http://127.0.0.1:8000";
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState("");
+  const [filter, setFilter] = useState(null);
 
-  //Load tasks from backend
   const loadTasks = () => {
-    fetch("http://127.0.0.1:8000/tasks")
+    const url = filter ? `${API}/tasks?task_status=${filter}` : `${API}/tasks`;
+
+    fetch(url)
       .then(res => res.json())
-      .then(data => setTasks(data))
-      .catch(() => setTasks([]));
+      .then(data => setTasks(data));
   };
 
-  //run once on page load
   useEffect(() => {
     loadTasks();
-  }, []);
+  }, [filter]);
 
-  //Add task
-  const addTask = async () => {
-    if (!newTask.trim()) return;
-
-    await fetch ("http://127.0.0.1:8000/tasks",{
+  const addTask = async (text) => {
+    await fetch(`${API}/tasks`, {
       method: "POST",
-      headers: { "Content-Type": "application/json"},
-      body: JSON.stringify({ description: newTask })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: text })
+    });
+    loadTasks();
+  };
+
+  const deleteTask = async (id) => {
+    await fetch(`${API}/tasks/${id}`, {method: "DELETE" });
+    loadTasks();
+  };
+
+  const toggleTask = async (task) => {
+    const newStatus = task.status === "done" ? "todo" : "done";
+
+    await fetch(`${API}/tasks/${task.id}/status`,{
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus })
     });
 
-    setNewTask("");
-    loadTasks(); //refresh list
+    loadTasks();
   };
-  
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/tasks")
-      .then(res => {
-        if (!res.ok) return [];
-        return res.json();
-      })
-      .then(data => setTasks(data));
-  }, []);
 
   return (
-    <div style={{ padding: 40 }}>
+    <div style={{ padding: 40}}>
       <h1>Task Tracker</h1>
 
-      <input
-        value={newTask}
-        onChange={e => setNewTask(e.target.value)}
-        placeholder="Enter task..."
-      />
-
-      <button onClick={addTask}>Add</button>
-
-      <hr />
-
-      {tasks.map(t => (
-        <div key={t.id}>
-          {t.description} - {t.status}
-        </div>
-      ))}
+      <TaskForm onAdd={addTask} />
+      <TaskList task={tasks} onDelete={deleteTask} onToggle={toggleTask} />
+      <FilterBar setFilter={setFilter} />
     </div>
-  );
+  )
 }
 
 export default App;
