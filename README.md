@@ -61,17 +61,16 @@ This project demonstrates real-world software architecture including:
 
 ---
 
-## 📂 Project Structure
+###📂 Project Structure
 
 task-tracker/
-│
-├── api/                → FastAPI routes
-├── core/               → Business logic layer
-├── storage/            → Database & storage layer
-├── task-ui/            → React frontend
-├── requirements.txt
-├── README.md
-└── .gitignore
+api/               
+core/              
+storage/           
+task-ui/           
+requirements.txt 
+README.md  
+.gitignore
 
 ---
 
