@@ -140,12 +140,6 @@ http://localhost:5173
 
 ---
 
-# 📸 Screenshots
-
-(Add screenshots later)
-
----
-
 # 📌 Future Improvements
 
 - JWT authentication
