@@ -14,10 +14,19 @@ from storage.db.models import User
 from core.security import hash_password
 from core.security import verify_password
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title = "Task Tracker API",
     description="Simple task manager built with FastAPI + Clean Architecture",
     version="1.0.0"    
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Create database tables

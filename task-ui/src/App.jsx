@@ -1,16 +1,18 @@
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import FilterBar from "./components/FilterBar";
 
-const API = "http://127.0.0.1:8000";
+const API = "http://127.0.0.1:8000"; // ⭐ MUST BE HERE (TOP LEVEL)
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState(null);
 
   const loadTasks = () => {
-    const url = filter ? `${API}/tasks?task_status=${filter}` : `${API}/tasks`;
+    const url = filter
+      ? `${API}/tasks?task_status=${filter}`
+      : `${API}/tasks`;
 
     fetch(url)
       .then(res => res.json())
@@ -31,14 +33,14 @@ function App() {
   };
 
   const deleteTask = async (id) => {
-    await fetch(`${API}/tasks/${id}`, {method: "DELETE" });
+    await fetch(`${API}/tasks/${id}`, { method: "DELETE" });
     loadTasks();
   };
 
   const toggleTask = async (task) => {
     const newStatus = task.status === "done" ? "todo" : "done";
 
-    await fetch(`${API}/tasks/${task.id}/status`,{
+    await fetch(`${API}/tasks/${task.id}/status`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus })
@@ -48,14 +50,14 @@ function App() {
   };
 
   return (
-    <div style={{ padding: 40}}>
+    <div style={{ padding: 40 }}>
       <h1>Task Tracker</h1>
 
       <TaskForm onAdd={addTask} />
-      <TaskList task={tasks} onDelete={deleteTask} onToggle={toggleTask} />
+      <TaskList tasks={tasks} onDelete={deleteTask} onToggle={toggleTask} />
       <FilterBar setFilter={setFilter} />
     </div>
-  )
+  );
 }
 
 export default App;
