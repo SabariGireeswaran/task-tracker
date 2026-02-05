@@ -103,7 +103,7 @@ def mark_task_status(task_id, new_status):
         return
     
     task["status"] = new_status
-    task["updateAt"] = datetime.now().strftime("Y-%m-%d %H:%M:%S")
+    task["updatedAt"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     save_tasks(tasks)
     print(f"Task {task_id} marked as {new_status}.")

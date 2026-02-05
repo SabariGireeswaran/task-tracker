@@ -9,14 +9,24 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState(null);
 
-  const loadTasks = () => {
-    const url = filter
-      ? `${API}/tasks?task_status=${filter}`
+  const loadTasks = async () => {
+    try{
+      const url = filter? '${API}/tasks?task_status=${filter}'
       : `${API}/tasks`;
 
-    fetch(url)
-      .then(res => res.json())
-      .then(data => setTasks(data));
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        setTasks([]);
+        return;
+      }
+
+      const data = await res.json();
+      setTasks(data);
+    } catch (err) {
+      console.error(err);
+      setTasks([]);
+    }
   };
 
   useEffect(() => {

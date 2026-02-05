@@ -25,6 +25,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -43,6 +44,9 @@ class TaskCreate(BaseModel):
 
 class TaskUpdate(BaseModel):
     description: str 
+
+class TaskStatusUpdate(BaseModel):
+    status: str
 
 class TaskResponse(BaseModel):
     id: int
@@ -86,12 +90,6 @@ def list_tasks(task_status: str | None = None):
         )
     tasks = manager.list_tasks(task_status)
 
-    if not tasks:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No tasks found"
-        )   
-    
     return [task.to_dict() for task in tasks]
 
 @app.get("/tasks/{task_id}", response_model=TaskResponse)
@@ -120,6 +118,25 @@ def update_task(task_id: int, task: TaskUpdate):
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task with id {task_id} not found"
+        )
+    
+    updated_task = manager.get_task_by_id(task_id)
+    return updated_task.to_dict()
+
+@app.put("/tasks/{task_id}/status", response_model=TaskResponse)
+def update_task_status(task_id: int, task: TaskStatusUpdate):
+    if task.status not in VALID_STATUSES:
+        raise HTTPException(
+            status_code = status.HTTP_400_BAD_REQUEST,
+            detail = f"Invalid status. Allowed values: {','.join(VALID_STATUSES)}"
+        )
+    
+    try:
+        manager.mark_task(task_id, task.status)
+    except ValueError:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
             detail=f"Task with id {task_id} not found"
         )
     

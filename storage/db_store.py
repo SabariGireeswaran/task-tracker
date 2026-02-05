@@ -15,21 +15,24 @@ class DbTaskStore:
                 "status": t.status,
                 "createdAt": t.createdAt,
                 "updatedAt": t.updatedAt
-            })
-        
+            })       
         db.close()
         return result
 
     def save(self, data):
         db: Session = SessionLocal()
         
-        #Clear table first(simple approach Like JSON overwrite)
-        db.query(TaskModel).delete()
-
         for item in data:
-            task = TaskModel(**item)
-            db.add(task)
-        
+            task = db.get(TaskModel, item["id"])
+            if task:
+                task.description = item["description"]
+                task.status = item["status"]
+                task.createdAt = item["createdAt"]
+                task.updatedAt = item["updatedAt"]
+            else:
+                task = TaskModel(**item)
+                db.add(task)
+
         db.commit()
         db.close()
         
