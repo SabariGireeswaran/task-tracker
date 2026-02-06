@@ -21,6 +21,12 @@ class DbTaskStore:
 
     def save(self, data):
         db: Session = SessionLocal()
+        ids = {item["id"] for item in data}
+
+        if ids:
+            db.query(TaskModel).filter(~TaskModel.id.in_(ids)).delete(synchronize_session=False)
+        else:
+            db.query(TaskModel).delete(synchronize_session=False)
         
         for item in data:
             task = db.get(TaskModel, item["id"])

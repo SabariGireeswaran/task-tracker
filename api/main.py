@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 
+from core.jwt_auth import create_access_token
 from core.manager import TaskManager
 from storage.db_store import DbTaskStore
 
@@ -185,4 +186,9 @@ def login(user: UserCreate):
     if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(401, "Invalid credentials")
     
-    return {"message": "Login successful(token next step)"}
+    token = create_access_token({"sub": db_user.username})
+
+    return{
+        "access_token": token,
+        "token_type": "bearer"
+    }

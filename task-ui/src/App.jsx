@@ -11,7 +11,8 @@ function App() {
 
   const loadTasks = async () => {
     try{
-      const url = filter? '${API}/tasks?task_status=${filter}'
+      const url = filter 
+      ? `${API}/tasks?task_status=${filter}`
       : `${API}/tasks`;
 
       const res = await fetch(url);
