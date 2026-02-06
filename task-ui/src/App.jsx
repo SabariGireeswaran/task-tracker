@@ -2,12 +2,20 @@ import { useEffect, useState } from "react";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import FilterBar from "./components/FilterBar";
+import Login from "./Login";
 
 const API = "http://127.0.0.1:8000"; // ⭐ MUST BE HERE (TOP LEVEL)
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState(null);
+  const[loggedIn, setLoggedIn] = useState(
+    !!localStorage.getItem("token")
+  );
+
+  const getAuthHeader = () => ({
+    Authorization: `Bearer ${localStorage.getItem("token")}`
+  });
 
   const loadTasks = async () => {
     try{
@@ -15,7 +23,9 @@ function App() {
       ? `${API}/tasks?task_status=${filter}`
       : `${API}/tasks`;
 
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: getAuthHeader()
+      });
 
       if (!res.ok) {
         setTasks([]);
@@ -31,20 +41,25 @@ function App() {
   };
 
   useEffect(() => {
-    loadTasks();
-  }, [filter]);
+    if (loggedIn) loadTasks();
+  }, [filter, loggedIn]);
 
   const addTask = async (text) => {
     await fetch(`${API}/tasks`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json", 
+        ...getAuthHeader() },
       body: JSON.stringify({ description: text })
     });
     loadTasks();
   };
 
   const deleteTask = async (id) => {
-    await fetch(`${API}/tasks/${id}`, { method: "DELETE" });
+    await fetch(`${API}/tasks/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeader()
+    });
     loadTasks();
   };
 
@@ -53,12 +68,24 @@ function App() {
 
     await fetch(`${API}/tasks/${task.id}/status`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        ...getAuthHeader() 
+      },
       body: JSON.stringify({ status: newStatus })
     });
 
     loadTasks();
   };
+  
+  const logout = () => {
+    localStorage.removeItem("token");
+    setLoggedIn(false);
+  }
+
+  if (!loggedIn) {
+    return <Login onLogin={() => setLoggedIn(true)}/>;
+  }
 
   return (
     <div style={{ padding: 40 }}>
@@ -67,6 +94,7 @@ function App() {
       <TaskForm onAdd={addTask} />
       <TaskList tasks={tasks} onDelete={deleteTask} onToggle={toggleTask} />
       <FilterBar setFilter={setFilter} />
+      <button onClick={logout}>Logout</button>
     </div>
   );
 }
