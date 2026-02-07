@@ -13,7 +13,7 @@ class TaskManager:
         data = [task.to_dict() for task in tasks]
         self.storage.save(data)
     
-    def add_task(self, description):
+    def add_task(self, description: str, user_id: int):
         tasks = self._load_tasks()
 
         new_id = 1 if not tasks else tasks[-1].id + 1
@@ -22,7 +22,7 @@ class TaskManager:
         tasks.append(task)
         self._save_tasks(tasks)
 
-        return task
+        return self.store.add(description, user_id)
     
     def _find_task(self, tasks, task_id):
         for task in tasks:
@@ -60,8 +60,11 @@ class TaskManager:
         task.mark_status(status)
         self._save_tasks(tasks)
 
-    def list_tasks(self, status = None):
-        tasks = self._load_tasks()
+    def list_tasks(self, status = None, user_id = None):
+        tasks = self.store.load()
+
+        if user_id:
+            tasks = [ t for t in tasks if t.user_id == user_id]
         
         if status:
             return [t for t in tasks if t.status == status]

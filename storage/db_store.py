@@ -5,17 +5,23 @@ from storage.db.models import Task as TaskModel
 class DbTaskStore:
     def load(self):
         db: Session = SessionLocal()
-        tasks = db.query(TaskModel).all()
+        tasks = (
+            db.query(TaskModel)
+            .all()
+        )
 
         result = []
+
         for t in tasks:
             result.append({
                 "id": t.id,
                 "description": t.description,
                 "status": t.status,
+                "user_id": t.user_id,
                 "createdAt": t.createdAt,
                 "updatedAt": t.updatedAt
-            })       
+            })  
+                 
         db.close()
         return result
 

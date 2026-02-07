@@ -4,7 +4,7 @@ import TaskList from "./components/TaskList";
 import FilterBar from "./components/FilterBar";
 import Login from "./Login";
 
-const API = import.meta.env.VITE_API_URL;;
+const API = import.meta.env.VITE_API_URL;
 function App() {
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState(null);

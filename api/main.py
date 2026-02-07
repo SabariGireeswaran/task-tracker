@@ -20,6 +20,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.security import get_current_user
 from fastapi import Depends
 
+from core.deps import get_current_user
+
+from core.deps import get_current_user
+from fastapi import Depends
+
 app = FastAPI(
     title = "Task Tracker API",
     description="Simple task manager built with FastAPI + Clean Architecture",
@@ -75,27 +80,27 @@ def root():
 @app.post("/tasks", response_model = TaskResponse,
           status_code=status.HTTP_201_CREATED)
 def create_task(task: TaskCreate,
-                user: str = Depends(get_current_user)):
+                user: User = Depends(get_current_user)):
     if not task.description.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Task description cannot be empty"
         )
     
-    new_task = manager.add_task(task.description)
+    new_task = manager.add_task(task.description, user.id)
     return new_task.to_dict()
 
 VALID_STATUSES = {"todo", "in-progress", "done"}
 
 @app.get("/tasks")
 def list_tasks(task_status: str | None = None,
-               user: str = Depends(get_current_user)):
+               user: User = Depends(get_current_user)):
     if task_status is not None and task_status not in VALID_STATUSES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid status. Allowed values: {', '.join(VALID_STATUSES)}"
         )
-    tasks = manager.list_tasks(task_status)
+    tasks = manager.list_tasks(task_status, user.id)
 
     return [task.to_dict() for task in tasks]
 
