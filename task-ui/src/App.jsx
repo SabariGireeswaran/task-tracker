@@ -4,11 +4,11 @@ import TaskList from "./components/TaskList";
 import FilterBar from "./components/FilterBar";
 import Login from "./Login";
 
-const API = "https://task-tracker-23ld.onrender.com"; // ⭐ MUST BE HERE (TOP LEVEL)
-
+const API = import.meta.env.VITE_API_URL;;
 function App() {
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState(null);
+  const [lastError, setLastError] = useState("");
   const[loggedIn, setLoggedIn] = useState(
     !!localStorage.getItem("token")
   );
@@ -16,6 +16,12 @@ function App() {
   const getAuthHeader = () => ({
     Authorization: `Bearer ${localStorage.getItem("token")}`
   });
+
+  const captureError = async (res, context) => {
+    const text = await res.text().catch(() => "");
+    const detail = text || res.statusText || "Unknown error";
+    setLastError(`${context}: ${res.status} ${detail}`);
+  };
 
   const loadTasks = async () => {
     try{
@@ -29,6 +35,7 @@ function App() {
 
       if (!res.ok) {
         setTasks([]);
+        await captureError(res, "Load tasks failed");
         return;
       }
 
@@ -37,6 +44,7 @@ function App() {
     } catch (err) {
       console.error(err);
       setTasks([]);
+      setLastError(`Load tasks failed: ${err.message}`);
     }
   };
 
@@ -45,28 +53,36 @@ function App() {
   }, [filter, loggedIn]);
 
   const addTask = async (text) => {
-    await fetch(`${API}/tasks`, {
+    const res = await fetch(`${API}/tasks`, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json", 
         ...getAuthHeader() },
       body: JSON.stringify({ description: text })
     });
+    if (!res.ok) {
+      await captureError(res, "Add task failed");
+      return;
+    }
     loadTasks();
   };
 
   const deleteTask = async (id) => {
-    await fetch(`${API}/tasks/${id}`, {
+    const res = await fetch(`${API}/tasks/${id}`, {
       method: "DELETE",
       headers: getAuthHeader()
     });
+    if (!res.ok) {
+      await captureError(res, "Delete task failed");
+      return;
+    }
     loadTasks();
   };
 
   const toggleTask = async (task) => {
     const newStatus = task.status === "done" ? "todo" : "done";
 
-    await fetch(`${API}/tasks/${task.id}/status`, {
+    const res = await fetch(`${API}/tasks/${task.id}/status`, {
       method: "PUT",
       headers: { 
         "Content-Type": "application/json",
@@ -74,22 +90,37 @@ function App() {
       },
       body: JSON.stringify({ status: newStatus })
     });
+    if (!res.ok) {
+      await captureError(res, "Update status failed");
+      return;
+    }
 
     loadTasks();
   };
   
   const logout = () => {
     localStorage.removeItem("token");
+    setLastError("");
     setLoggedIn(false);
   }
 
   if (!loggedIn) {
-    return <Login onLogin={() => setLoggedIn(true)}/>;
+    return (
+      <Login
+        onLogin={() => setLoggedIn(true)}
+        onError={(msg) => setLastError(msg)}
+      />
+    );
   }
 
   return (
     <div style={{ padding: 40 }}>
       <h1>Task Tracker</h1>
+      <div style={{ marginBottom: 16, fontSize: 14 }}>
+        <div>API: {API}</div>
+        <div>Token: {localStorage.getItem("token") ? "present" : "missing"}</div>
+        <div>Last error: {lastError || "none"}</div>
+      </div>
 
       <TaskForm onAdd={addTask} />
       <TaskList tasks={tasks} onDelete={deleteTask} onToggle={toggleTask} />

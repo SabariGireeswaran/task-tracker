@@ -17,6 +17,9 @@ from core.security import verify_password
 
 from fastapi.middleware.cors import CORSMiddleware
 
+from core.security import get_current_user
+from fastapi import Depends
+
 app = FastAPI(
     title = "Task Tracker API",
     description="Simple task manager built with FastAPI + Clean Architecture",
@@ -25,7 +28,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173",
+                   "https://task-tracker-hazel-eight.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -70,7 +74,8 @@ def root():
 
 @app.post("/tasks", response_model = TaskResponse,
           status_code=status.HTTP_201_CREATED)
-def create_task(task: TaskCreate):
+def create_task(task: TaskCreate,
+                user: str = Depends(get_current_user)):
     if not task.description.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -83,7 +88,8 @@ def create_task(task: TaskCreate):
 VALID_STATUSES = {"todo", "in-progress", "done"}
 
 @app.get("/tasks")
-def list_tasks(task_status: str | None = None):
+def list_tasks(task_status: str | None = None,
+               user: str = Depends(get_current_user)):
     if task_status is not None and task_status not in VALID_STATUSES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -94,7 +100,8 @@ def list_tasks(task_status: str | None = None):
     return [task.to_dict() for task in tasks]
 
 @app.get("/tasks/{task_id}", response_model=TaskResponse)
-def get_task(task_id: int):
+def get_task(task_id: int,
+             user: str = Depends(get_current_user)):
     task = manager.get_task_by_id(task_id)
 
     if task is None:
@@ -106,7 +113,9 @@ def get_task(task_id: int):
     return task.to_dict()
 
 @app.put("/tasks/{task_id}", response_model=TaskResponse)
-def update_task(task_id: int, task: TaskUpdate):
+def update_task(task_id: int,
+                task: TaskUpdate,
+                user: str = Depends(get_current_user)):
 
     if not task.description.strip():
         raise HTTPException(
@@ -126,7 +135,9 @@ def update_task(task_id: int, task: TaskUpdate):
     return updated_task.to_dict()
 
 @app.put("/tasks/{task_id}/status", response_model=TaskResponse)
-def update_task_status(task_id: int, task: TaskStatusUpdate):
+def update_task_status(task_id: int, 
+                       task: TaskStatusUpdate,
+                       user: str = Depends(get_current_user)):
     if task.status not in VALID_STATUSES:
         raise HTTPException(
             status_code = status.HTTP_400_BAD_REQUEST,
@@ -145,7 +156,8 @@ def update_task_status(task_id: int, task: TaskStatusUpdate):
     return updated_task.to_dict()
 
 @app.delete("/tasks/{task_id}", response_model=MessageResponse)
-def delete_task(task_id: int):
+def delete_task(task_id: int,
+                user: str = Depends(get_current_user)):
 
     try:
         manager.delete_task(task_id)
