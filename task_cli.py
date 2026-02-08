@@ -144,7 +144,7 @@ if __name__ == "__main__":
             print("No tasks found.")
         else:
             for task in tasks:
-                print(task.to_dict())
+                print(f'[{task["id"]}] {task["description"]} ({task["status"]})')
 
     elif command == "update":  # Update a task
         if len(sys.argv) < 4:

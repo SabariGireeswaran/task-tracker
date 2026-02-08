@@ -82,7 +82,7 @@ def create_task(task: TaskCreate,
         )
     
     new_task = manager.add_task(task.description, user.id)
-    return new_task.to_dict()
+    return new_task
 
 VALID_STATUSES = {"todo", "in-progress", "done"}
 
@@ -96,7 +96,7 @@ def list_tasks(task_status: str | None = None,
         )
     tasks = manager.list_tasks(task_status, user.id)
 
-    return [task.to_dict() for task in tasks]
+    return [task for task in tasks]
 
 @app.get("/tasks/{task_id}", response_model=TaskResponse)
 def get_task(task_id: int,
@@ -109,7 +109,7 @@ def get_task(task_id: int,
             detail=f"Task with id {task_id} not found"
         )
     
-    return task.to_dict()
+    return task
 
 @app.put("/tasks/{task_id}", response_model=TaskResponse)
 def update_task(task_id: int,
@@ -131,7 +131,7 @@ def update_task(task_id: int,
         )
     
     updated_task = manager.get_task_by_id(task_id)
-    return updated_task.to_dict()
+    return updated_task
 
 @app.put("/tasks/{task_id}/status", response_model=TaskResponse)
 def update_task_status(task_id: int, 
@@ -152,7 +152,7 @@ def update_task_status(task_id: int,
         )
     
     updated_task = manager.get_task_by_id(task_id)
-    return updated_task.to_dict()
+    return updated_task
 
 @app.delete("/tasks/{task_id}", response_model=MessageResponse)
 def delete_task(task_id: int,
