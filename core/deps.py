@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from storage.db.database import SessionLocal
 from storage.db.models import User
-from core.jwt_auth import decode_access_token, verify_token
+from core.jwt_auth import decode_access_token
 
 security = HTTPBearer()
 
@@ -19,9 +19,7 @@ def get_current_user(
     username = payload.get("sub")
 
     db = SessionLocal()
-
     user = db.query(User).filter(User.username == username).first()
-
     db.close()
 
     if not user:

@@ -17,13 +17,8 @@ from core.security import verify_password
 
 from fastapi.middleware.cors import CORSMiddleware
 
-from core.security import get_current_user
 from fastapi import Depends
-
 from core.deps import get_current_user
-
-from core.deps import get_current_user
-from fastapi import Depends
 
 app = FastAPI(
     title = "Task Tracker API",
@@ -34,6 +29,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173",
+                   "http://127.0.0.1:5173",
                    "https://task-tracker-hazel-eight.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
@@ -62,8 +58,6 @@ class TaskResponse(BaseModel):
     id: int
     description: str
     status: str
-    createdAt: str
-    updatedAt: str
 
 class MessageResponse(BaseModel):
     message: str
