@@ -143,3 +143,30 @@ Learning Outcomes
 Author
 
 Sabari Gireeswaran
+
+--------------------------------------------------
+
+Known Issues
+
+- Some edge cases may return 500 errors during rapid task creation or refresh
+- Error handling can be improved in a few endpoints
+- Frontend does not yet show detailed server error messages
+- Minor refactoring needed in manager/storage layer
+
+These issues are kept intentionally as part of the learning process and will be addressed in future versions.
+
+--------------------------------------------------
+
+Future Improvements
+
+- Better error handling and validation
+- Refresh tokens for authentication
+- Pagination for tasks
+- Task due dates and priorities
+- Unit tests
+- Docker setup
+- CI/CD pipeline
+- UI improvements
+- Production-level optimizations
+
+--------------------------------------------------
